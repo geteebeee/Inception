@@ -1,0 +1,64 @@
+# srcs/docker-compose.yml
+# (Docker Compose automatically reads .env in the project root for ${VAR} substitution.)
+
+services:
+  nginx:
+    build: ./requirements/nginx
+    container_name: nginx
+    ports:
+      - "443:443"                    # public HTTPS entrypoint
+    volumes:
+      - wp_files:/var/www/wordpress  # serve files from the same volume as php-fpm
+    env_file:
+      - .env                         # provides DOMAIN_NAME (used by entrypoint & nginx conf)
+    depends_on:
+      - wordpress
+    restart: unless-stopped
+    networks: [intra]
+
+  wordpress:
+    build: ./requirements/wordpress  # alpine + php-fpm + wordpress + entrypoint
+    container_name: wordpress
+    expose:
+      - "9000"                       # php-fpm port (internal only)
+    volumes:
+      - wp_files:/var/www/wordpress  # shared with nginx
+    env_file:
+      - .env                         # MYSQL_* and URL/WP_TITLE if you use them
+    depends_on:
+      - mariadb
+    restart: unless-stopped
+    networks: [intra]
+
+  mariadb:
+    build: ./requirements/mariadb    # alpine + mariadb + init entrypoint
+    container_name: mariadb
+    expose:
+      - "3306"                       # internal only
+    volumes:
+      - db_data:/var/lib/mysql       # persistent DB data
+    env_file:
+      - .env                         # MYSQL_DATABASE, MYSQL_USER, MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD
+    restart: unless-stopped
+    networks: [intra]
+
+# Persistent named volumes -> bind-mounted to required host paths
+volumes:
+  wp_files:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/${LOGIN}/data/wordpress
+  db_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/${LOGIN}/data/mariadb
+
+# Single internal network
+networks:
+  intra:
+    driver: bridge
+
