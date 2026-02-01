@@ -2,7 +2,6 @@ FROM alpine:3.22
 
 RUN apk add --no-cache mariadb mariadb-client
 
-# runtime dirs + ownership
 RUN mkdir -p /run/mysqld && chown -R mysql:mysql /run/mysqld /var/lib/mysql
 
 COPY my.cnf /etc/my.cnf

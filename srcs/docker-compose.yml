@@ -1,48 +1,51 @@
-# srcs/docker-compose.yml
-# (Docker Compose automatically reads .env in the project root for ${VAR} substitution.)
-
 services:
   nginx:
     build: ./requirements/nginx
     container_name: nginx
     ports:
-      - "443:443"                    # public HTTPS entrypoint
+      - "443:443"
     volumes:
-      - wp_files:/var/www/wordpress  # serve files from the same volume as php-fpm
+      - wp_files:/var/www/wordpress
     env_file:
-      - .env                         # provides DOMAIN_NAME (used by entrypoint & nginx conf)
+      - .env
     depends_on:
       - wordpress
     restart: unless-stopped
     networks: [intra]
 
   wordpress:
-    build: ./requirements/wordpress  # alpine + php-fpm + wordpress + entrypoint
+    build: ./requirements/wordpress
     container_name: wordpress
     expose:
-      - "9000"                       # php-fpm port (internal only)
+      - "9000"
     volumes:
-      - wp_files:/var/www/wordpress  # shared with nginx
+      - wp_files:/var/www/wordpress
     env_file:
-      - .env                         # MYSQL_* and URL/WP_TITLE if you use them
+      - .env
+    secrets:
+      - db_pw
+      - wp_pw
+      - wp_admin_pw
     depends_on:
       - mariadb
     restart: unless-stopped
     networks: [intra]
 
   mariadb:
-    build: ./requirements/mariadb    # alpine + mariadb + init entrypoint
+    build: ./requirements/mariadb
     container_name: mariadb
     expose:
-      - "3306"                       # internal only
+      - "3306"
     volumes:
-      - db_data:/var/lib/mysql       # persistent DB data
+      - db_data:/var/lib/mysql
     env_file:
-      - .env                         # MYSQL_DATABASE, MYSQL_USER, MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD
+      - .env
+    secrets:
+      - db_root_pw
+      - db_pw
     restart: unless-stopped
     networks: [intra]
 
-# Persistent named volumes -> bind-mounted to required host paths
 volumes:
   wp_files:
     driver: local
@@ -57,8 +60,16 @@ volumes:
       o: bind
       device: /home/${LOGIN}/data/mariadb
 
-# Single internal network
 networks:
   intra:
     driver: bridge
 
+secrets:
+  db_root_pw:
+    file: ./requirements/secrets/db_root_pw.txt
+  db_pw:
+    file: ./requirements/secrets/db_pw.txt
+  wp_admin_pw:
+    file: ./requirements/secrets/wp_admin_pw.txt
+  wp_pw:
+    file: ./requirements/secrets/wp_pw.txt

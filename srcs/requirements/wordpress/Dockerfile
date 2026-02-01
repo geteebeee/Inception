@@ -1,16 +1,24 @@
 FROM alpine:3.22
 
-# core php + fpm + mysqli (for MariaDB later)
-RUN apk add --no-cache php82 php82-fpm php82-mysqli
+RUN apk add --no-cache php82 php82-fpm php82-mysqli php82-phar curl tar mariadb-client gnupg php82-cli php82-mbstring php82-mbstring
 
-# runtime dirs + non-login user
+WORKDIR /tmp
+
+RUN curl -fsSLO https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+ && curl -fsSLO https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar.asc \
+ && curl -fsSL https://raw.githubusercontent.com/wp-cli/builds/gh-pages/wp-cli.pgp | gpg --import \
+ && gpg --verify wp-cli.phar.asc wp-cli.phar \
+ && mv wp-cli.phar /usr/local/bin/wp-cli.phar \
+ && printf '#!/bin/sh\nexec /usr/bin/php82 /usr/local/bin/wp-cli.phar "$@"\n' > /usr/local/bin/wp \
+ && chmod +x /usr/local/bin/wp \
+ && rm -rf /tmp/*
+
+
 RUN adduser -D -H -s /sbin/nologin www && \
     mkdir -p /var/www/wordpress /run/php
 
-# php-fpm pool config: listen on TCP 9000
 COPY www.conf /etc/php82/php-fpm.d/www.conf
 
-# simple entrypoint: just start php-fpm in foreground
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
