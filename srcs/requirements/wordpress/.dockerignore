@@ -1,0 +1,10 @@
+*
+!Dockerfile
+!entrypoint.sh
+!www.conf
+
+*.swp
+*.swo
+*.swn
+*~
+
