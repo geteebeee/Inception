@@ -3,13 +3,20 @@ services:
     build: ./requirements/nginx
     container_name: nginx
     ports:
-      - "443:443"
+      - "${NGINX_PORT}:${NGINX_PORT}"
     volumes:
-      - wp_files:/var/www/wordpress
+      - wp_files:/var/www/wordpress  
     env_file:
       - .env
     depends_on:
-      - wordpress
+      wordpress:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "echo | openssl s_client -connect 127.0.0.1:$${NGINX_PORT} -brief >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
     restart: unless-stopped
     networks: [intra]
 
@@ -17,32 +24,49 @@ services:
     build: ./requirements/wordpress
     container_name: wordpress
     expose:
-      - "9000"
+      - "${WP_FPM_PORT}"
     volumes:
-      - wp_files:/var/www/wordpress
+      - wp_files:/var/www/wordpress  
     env_file:
       - .env
-    secrets:
-      - db_pw
-      - wp_pw
-      - wp_admin_pw
+    environment:
+      MYSQL_PASSWORD_FILE: /run/secrets/db_user_password
     depends_on:
-      - mariadb
+      mariadb:
+        condition: service_healthy
+    secrets:
+      - db_user_password
+    healthcheck:
+      test: ["CMD-SHELL", "php82 -r '$$s=@fsockopen(\"127.0.0.1\", (int)getenv(\"WP_FPM_PORT\"), $$e, $$m, 1); if (!$$s) { exit(1);} fclose($$s);'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
     restart: unless-stopped
     networks: [intra]
 
   mariadb:
     build: ./requirements/mariadb
     container_name: mariadb
+    command: ["mysqld", "--user=mysql", "--console", "--port=${MARIADB_PORT}"]
     expose:
-      - "3306"
+      - "${MARIADB_PORT}"
     volumes:
       - db_data:/var/lib/mysql
     env_file:
       - .env
+    environment:
+      MYSQL_PASSWORD_FILE: /run/secrets/db_user_password
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
     secrets:
-      - db_root_pw
-      - db_pw
+      - db_user_password
+      - db_root_password
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -P $${MARIADB_PORT} -uroot -p\"$$(cat /run/secrets/db_root_password)\" >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
     restart: unless-stopped
     networks: [intra]
 
@@ -52,24 +76,24 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /home/${LOGIN}/data/wordpress
+      device: ${WP_PATH}
   db_data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /home/${LOGIN}/data/mariadb
+      device: ${DB_PATH}
 
 networks:
   intra:
     driver: bridge
 
 secrets:
-  db_root_pw:
-    file: ./requirements/secrets/db_root_pw.txt
-  db_pw:
-    file: ./requirements/secrets/db_pw.txt
-  wp_admin_pw:
-    file: ./requirements/secrets/wp_admin_pw.txt
-  wp_pw:
-    file: ./requirements/secrets/wp_pw.txt
+  db_user_password:
+    file: ./secrets/db_pw.txt
+  db_root_password:
+    file: ./secrets/db_root_pw.txt
+  wp_user_password:
+    file: ./secrets/wp_pw.txt
+  wp_admin_password:
+    file: ./secrets/wp_admin_pw.txt
