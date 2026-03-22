@@ -1,8 +1,7 @@
 SRC_DIR := srcs
 ENV_FILE := .env
-LOGIN ?= $(shell id -un)
-WP_PATH := /home/$(LOGIN)/data/wordpress
-DB_PATH := /home/$(LOGIN)/data/mariadb
+WP_PATH := /home/gorg/data/wordpress
+DB_PATH := /home/gorg/data/mariadb
 
 NAME := inception
 

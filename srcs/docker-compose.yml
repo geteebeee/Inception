@@ -1,9 +1,10 @@
 services:
   nginx:
     build: ./requirements/nginx
+    image: nginx
     container_name: nginx
     ports:
-      - "${NGINX_PORT}:${NGINX_PORT}"
+      - "443:443"
     volumes:
       - wp_files:/var/www/wordpress  
     env_file:
@@ -22,6 +23,7 @@ services:
 
   wordpress:
     build: ./requirements/wordpress
+    image: wordpress
     container_name: wordpress
     expose:
       - "${WP_FPM_PORT}"
@@ -47,6 +49,7 @@ services:
 
   mariadb:
     build: ./requirements/mariadb
+    image: mariadb
     container_name: mariadb
     command: ["mysqld", "--user=mysql", "--console", "--port=${MARIADB_PORT}"]
     expose:
