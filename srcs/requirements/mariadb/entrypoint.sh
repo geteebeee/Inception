@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
 
-MYSQL_ROOT_PASSWORD="$(cat /run/secrets/db_root_pw)"
-MYSQL_PASSWORD="$(cat /run/secrets/db_pw)"
+MYSQL_ROOT_PASSWORD="$(cat /run/secrets/db_root_password)"
+MYSQL_PASSWORD="$(cat /run/secrets/db_user_password)"
 export MYSQL_ROOT_PASSWORD MYSQL_PASSWORD
 
 

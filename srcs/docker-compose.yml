@@ -38,6 +38,8 @@ services:
         condition: service_healthy
     secrets:
       - db_user_password
+      - wp_user_password
+      - wp_admin_password
     healthcheck:
       test: ["CMD-SHELL", "php82 -r '$$s=@fsockopen(\"127.0.0.1\", (int)getenv(\"WP_FPM_PORT\"), $$e, $$m, 1); if (!$$s) { exit(1);} fclose($$s);'"]
       interval: 10s

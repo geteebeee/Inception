@@ -1,11 +1,11 @@
 #!/bin/sh
 set -eu
 
-MYSQL_PASSWORD="$(cat /run/secrets/db_pw)"
+MYSQL_PASSWORD="$(cat /run/secrets/db_user_password)"
 export MYSQL_PASSWORD
 
-WP_ADMIN_PASSWORD="$(cat /run/secrets/wp_admin_pw)"
-WP_USER_PASSWORD="$(cat /run/secrets/wp_pw)"
+WP_ADMIN_PASSWORD="$(cat /run/secrets/wp_admin_password)"
+WP_USER_PASSWORD="$(cat /run/secrets/wp_user_password)"
 export WP_ADMIN_PASSWORD WP_USER_PASSWORD
 
 WP_DIR=/var/www/wordpress
