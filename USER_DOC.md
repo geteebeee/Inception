@@ -82,32 +82,21 @@ Docker Compose exposes the following secret names to the containers:
 
 Those secret names are currently backed by these local files:
 
-- `srcs/secrets/db_pw.txt`
-- `srcs/secrets/db_root_pw.txt`
-- `srcs/secrets/wp_pw.txt`
-- `srcs/secrets/wp_admin_pw.txt`
+- `srcs/secrets/db_user_password.txt`
+- `srcs/secrets/db_root_password.txt`
+- `srcs/secrets/wp_user_password.txt`
+- `srcs/secrets/wp_admin_password.txt`
 
 The repository includes example files with the `.example` suffix that can be copied and filled locally.
-
-## Check Service Status
-
-To list running containers:
-
-```sh
-make ps
-```
-
-To watch logs:
-
-```sh
-make logs
-```
-
-To verify the public entrypoint manually, open the site in a browser or check that HTTPS answers on port `443`.
 
 ## Persistent Data
 
 Project data is intended to persist on the host under:
+
+- `/home/<login>/data/wordpress`
+- `/home/<login>/data/mariadb`
+
+For this repository's default example values, those paths are:
 
 - `/home/gorg/data/wordpress`
 - `/home/gorg/data/mariadb`

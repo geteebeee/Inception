@@ -38,15 +38,29 @@ cp srcs/.env.example srcs/.env
 
 Then fill in the required values for your login, domain, database, and WordPress users.
 
+At minimum, configure these values:
+
+- `LOGIN`
+- `DOMAIN_NAME`
+- `WP_PATH`
+- `DB_PATH`
+- `WP_ADMIN_USER`
+- `WP_ADMIN_EMAIL`
+- `WP_USER_EMAIL`
+- `WP_FPM_PORT`
+- `MARIADB_PORT`
+- `MYSQL_DATABASE`
+- `MYSQL_USER`
+
 ### 2. Create The Secret Files
 
 Create local secret files from the examples in `srcs/secrets/`:
 
 ```sh
-cp srcs/secrets/db_pw.txt.example srcs/secrets/db_pw.txt
-cp srcs/secrets/db_root_pw.txt.example srcs/secrets/db_root_pw.txt
-cp srcs/secrets/wp_pw.txt.example srcs/secrets/wp_pw.txt
-cp srcs/secrets/wp_admin_pw.txt.example srcs/secrets/wp_admin_pw.txt
+cp srcs/secrets/db_user_password.txt.example srcs/secrets/db_user_password.txt
+cp srcs/secrets/db_root_password.txt.example srcs/secrets/db_root_password.txt
+cp srcs/secrets/wp_user_password.txt.example srcs/secrets/wp_user_password.txt
+cp srcs/secrets/wp_admin_password.txt.example srcs/secrets/wp_admin_password.txt
 ```
 
 Docker Compose maps those files to these secret names inside the containers:
@@ -60,12 +74,14 @@ Then replace the placeholder values with real local credentials.
 
 ### 3. Prepare Host Storage
 
-The current Makefile creates the following directories automatically when running `make`:
+The subject expects Docker data to live under `/home/<login>/data/`. In this repository, the Compose file reads the paths from `srcs/.env` through `WP_PATH` and `DB_PATH`.
+
+For the default example configuration, those directories are:
 
 - `/home/gorg/data/wordpress`
 - `/home/gorg/data/mariadb`
 
-These directories store persistent website and database data.
+The current [Makefile](/home/gorg/Inception/Makefile) creates those directories automatically when running `make`. If you change `WP_PATH` or `DB_PATH` in `srcs/.env`, keep the Makefile values in sync.
 
 ### 4. Configure Local Domain Resolution
 
@@ -114,8 +130,6 @@ make ps
 make logs
 make clean
 make fclean
-make wipe
-make volumes
 ```
 
 ### Notes About Cleanup
@@ -170,15 +184,11 @@ The Docker secret names used by the services are:
 - `wp_user_password`
 - `wp_admin_password`
 
-No password should be hardcoded in Dockerfiles or committed to the repository.
+The corresponding local files are:
 
-## Validation Tips
+- `srcs/secrets/db_user_password.txt`
+- `srcs/secrets/db_root_password.txt`
+- `srcs/secrets/wp_user_password.txt`
+- `srcs/secrets/wp_admin_password.txt`
 
-Before evaluation, check at least the following:
-
-- the domain resolves correctly
-- only NGINX is reachable from the host on port `443`
-- WordPress opens over HTTPS
-- the WordPress admin panel is accessible
-- MariaDB data persists after restarting the stack
-- the required secret files exist locally and are not committed
+No password should be hardcoded in Dockerfiles or committed to the repository. The `.env` file should only contain non-sensitive configuration.

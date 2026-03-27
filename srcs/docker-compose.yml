@@ -13,7 +13,7 @@ services:
       wordpress:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "echo | openssl s_client -connect 127.0.0.1:$${NGINX_PORT} -brief >/dev/null 2>&1"]
+      test: ["CMD-SHELL", "echo | openssl s_client -connect 127.0.0.1:443 -brief >/dev/null 2>&1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -95,10 +95,10 @@ networks:
 
 secrets:
   db_user_password:
-    file: ./secrets/db_pw.txt
+    file: ./secrets/db_user_password.txt
   db_root_password:
-    file: ./secrets/db_root_pw.txt
+    file: ./secrets/db_root_password.txt
   wp_user_password:
-    file: ./secrets/wp_pw.txt
+    file: ./secrets/wp_user_password.txt
   wp_admin_password:
-    file: ./secrets/wp_admin_pw.txt
+    file: ./secrets/wp_admin_password.txt

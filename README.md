@@ -36,7 +36,7 @@ The main sources in this repository are:
 - The images are built from custom Dockerfiles based on Alpine.
 - NGINX is the only service exposed to the host and serves HTTPS traffic.
 - WordPress and MariaDB communicate over an internal Docker network.
-- Persistent data is stored outside the containers through mounted volumes.
+- Persistent data is stored under `/home/<login>/data` on the host through mounted volumes.
 - Non-sensitive settings are kept in `.env`, while passwords are intended to be provided through Docker secrets.
 
 ### Comparisons
@@ -70,9 +70,17 @@ Docker-managed volumes are portable and abstract away the exact host path. Bind 
 ### Setup
 
 1. Copy `srcs/.env.example` to `srcs/.env` and fill in the required values.
-2. Create the local secret files expected by the project.
-3. Ensure your domain, such as `gorg.42.fr`, resolves to your local machine.
-4. Build and start the stack with:
+2. Set `WP_PATH` and `DB_PATH` to the subject-style host paths:
+
+```sh
+WP_PATH=/home/<login>/data/wordpress
+DB_PATH=/home/<login>/data/mariadb
+```
+
+3. Create the local secret files expected by the project.
+4. If you change the host data paths in `srcs/.env`, update [Makefile](/home/gorg/Inception/Makefile) so its directory-creation and cleanup targets use the same paths.
+5. Ensure your domain, such as `gorg.42.fr`, resolves to your local machine.
+6. Build and start the stack with:
 
 ```sh
 make
@@ -89,10 +97,12 @@ The Compose secret names used by the containers are:
 
 They are currently backed by these local files:
 
-- `srcs/secrets/db_pw.txt`
-- `srcs/secrets/db_root_pw.txt`
-- `srcs/secrets/wp_pw.txt`
-- `srcs/secrets/wp_admin_pw.txt`
+- `srcs/secrets/db_user_password.txt`
+- `srcs/secrets/db_root_password.txt`
+- `srcs/secrets/wp_user_password.txt`
+- `srcs/secrets/wp_admin_password.txt`
+
+The repository only tracks `.example` files. Create the real secret files locally before running the project.
 
 ### Useful Commands
 
@@ -102,8 +112,6 @@ make build
 make down
 make stop
 make restart
-make ps
-make logs
 make clean
 make fclean
 ```
