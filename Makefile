@@ -30,4 +30,4 @@ fclean: clean
 
 re: fclean up
 
-.PHONY: all up build down clean fclean re ps logs stop restart wipe volumes env
+.PHONY: all up build down clean fclean re stop restart 
