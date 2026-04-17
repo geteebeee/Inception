@@ -1,10 +1,10 @@
 FROM alpine:3.22
 
-RUN apk add --no-cache nginx openssl
+RUN apk add --no-cache nginx openssl gettext
 
-RUN mkdir -p /run/nginx /run/nginx/ssl /var/www/wordpress
+RUN mkdir -p /run/nginx /run/nginx/ssl /var/www/wordpress /etc/nginx/templates
 
-COPY default.conf /etc/nginx/http.d/default.conf
+COPY default.conf /etc/nginx/templates/default.conf.template
 
 COPY entrypoint.sh /entrypoint.sh
 

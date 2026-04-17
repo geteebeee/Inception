@@ -126,8 +126,6 @@ make restart
 Useful maintenance commands:
 
 ```sh
-make ps
-make logs
 make clean
 make fclean
 ```
@@ -136,7 +134,6 @@ make fclean
 
 - `make clean` stops the stack and prunes unused Docker objects.
 - `make fclean` also removes persisted contents under the configured host data directories.
-- `make wipe` recreates the empty data directories after `fclean`.
 
 ## Service Behavior
 

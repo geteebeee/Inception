@@ -67,7 +67,7 @@ services:
       - db_user_password
       - db_root_password
     healthcheck:
-      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -P $${MARIADB_PORT} -uroot -p\"$$(cat /run/secrets/db_root_password)\" >/dev/null 2>&1"]
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -P $${MARIADB_PORT} --silent >/dev/null 2>&1"]
       interval: 10s
       timeout: 5s
       retries: 10

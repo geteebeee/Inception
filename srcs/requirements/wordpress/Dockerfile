@@ -17,7 +17,7 @@ RUN curl -fsSLO https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp
 RUN adduser -D -H -s /sbin/nologin www && \
     mkdir -p /var/www/wordpress /run/php
 
-COPY www.conf /etc/php82/php-fpm.d/www.conf
+COPY www.conf /etc/php82/php-fpm.d/www.conf.template
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
@@ -25,4 +25,3 @@ RUN chmod +x /entrypoint.sh
 EXPOSE 9000
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["php-fpm82", "-F"]
-

@@ -11,6 +11,9 @@ export WP_ADMIN_PASSWORD WP_USER_PASSWORD
 WP_DIR=/var/www/wordpress
 CFG="$WP_DIR/wp-config.php"
 
+sed "s/__WP_FPM_PORT__/${WP_FPM_PORT}/g" /etc/php82/php-fpm.d/www.conf.template \
+  > /etc/php82/php-fpm.d/www.conf
+
 chown -R www:www /var/www
 
 if [ ! -f "$WP_DIR/wp-settings.php" ]; then
@@ -21,20 +24,29 @@ if [ ! -f "$WP_DIR/wp-settings.php" ]; then
   chown -R www:www "$WP_DIR"
 fi
 
+db_ready=false
 for i in $(seq 1 30); do
-  mariadb-admin -h mariadb -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" ping >/dev/null 2>&1 && break
+  if mariadb -h mariadb -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" \
+    -e "USE \`$MYSQL_DATABASE\`; SELECT 1;" >/dev/null 2>&1; then
+    db_ready=true
+    break
+  fi
   sleep 1
 done
 
+if [ "$db_ready" != "true" ]; then
+  echo "[wordpress] database is unreachable or credentials are invalid"
+  exit 1
+fi
 
 if [ ! -f "$CFG" ]; then
-  cat > "$CFG" <<'PHP'
+  cat > "$CFG" <<PHP
 <?php
 define('DB_NAME',     getenv('MYSQL_DATABASE'));
 define('DB_USER',     getenv('MYSQL_USER'));
-define('DB_PASSWORD', getenv('MYSQL_PASSWORD'));
-define('DB_HOST',     'mariadb:3306');
-$table_prefix = 'wp_';
+define('DB_PASSWORD', getenv('MYSQL_PASSWORD') ?: trim((string) @file_get_contents(getenv('MYSQL_PASSWORD_FILE'))));
+define('DB_HOST',     'mariadb:${MARIADB_PORT}');
+\$table_prefix = 'wp_';
 define('WP_DEBUG', false);
 if ( !defined('ABSPATH') ) define('ABSPATH', __DIR__ . '/');
 require_once ABSPATH . 'wp-settings.php';
@@ -61,4 +73,3 @@ if ! wp core is-installed --path="$WP_DIR" --allow-root >/dev/null 2>&1; then
 fi
 
 exec "$@"
-

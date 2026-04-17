@@ -17,6 +17,10 @@ if [ ! -f "$CRT" ] || [ ! -f "$KEY" ]; then
   chmod 600 "$KEY"
 fi
 
+envsubst '${DOMAIN_NAME} ${WP_FPM_PORT}' \
+  < /etc/nginx/templates/default.conf.template \
+  > /etc/nginx/http.d/default.conf
+
 # sanity check config before starting
 echo "[entrypoint] nginx -t"
 nginx -t
@@ -29,4 +33,3 @@ fi
 
 echo "[entrypoint] start: $*"
 exec "$@"
-
