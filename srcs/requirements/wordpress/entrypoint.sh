@@ -26,7 +26,7 @@ fi
 
 db_ready=false
 for i in $(seq 1 30); do
-  if mariadb -h mariadb -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" \
+  if mariadb -h mariadb -P"$MARIADB_PORT" -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" \
     -e "USE \`$MYSQL_DATABASE\`; SELECT 1;" >/dev/null 2>&1; then
     db_ready=true
     break

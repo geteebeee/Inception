@@ -26,7 +26,7 @@ clean: down
 	@docker system prune -f
 
 fclean: clean
-	@doas rm -rf "$(WP_PATH)"/* "$(DB_PATH)"/*
+	@doas rm -rf "/home/gorg/data"
 
 re: fclean up
 
